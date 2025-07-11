@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from .constants import CELL_POE_PREFILL_THRESHOLD
+from .constants import CELL_POE_PREFILL_THRESHOLD, CELL_POE_HIDDEN_CLUE_THRESHOLD
 
 if TYPE_CHECKING:
     from .game import Game
@@ -22,6 +22,8 @@ def parse_input(g: "Game", input_clues: str, input_prefill: str) -> bool:
     for clue in clues:
         if not (0 <= clue <= n):
             return False
+        if clue == 0:
+            g.hidden_edge_clues_count += 1
         if clue == n:
             max_clue_count += 1
             if max_clue_count > 2:
@@ -38,9 +40,10 @@ def parse_input(g: "Game", input_clues: str, input_prefill: str) -> bool:
 
     total_cells = g.n**2
     prefill_count = len(g.prefill_cells)
-    prefill_ratio = prefill_count / total_cells if total_cells > 0 else 0.0
+    prefill_ratio = prefill_count / total_cells
+    hidden_clue_ratio = g.hidden_edge_clues_count / total_cells
     g.should_use_cell_poe = (prefill_ratio > CELL_POE_PREFILL_THRESHOLD or
-                             prefill_count > 8)
+                             prefill_count > 8) and hidden_clue_ratio < CELL_POE_HIDDEN_CLUE_THRESHOLD
     return True
 
 

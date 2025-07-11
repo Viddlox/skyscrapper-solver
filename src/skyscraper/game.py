@@ -36,6 +36,7 @@ class Game:
     prefill_cells_poe: Set[int] = field(default_factory=set)
     should_use_cell_poe: bool = False
     poe_state_snapshots: List['POEGameState'] = field(default_factory=list)
+    hidden_edge_clues_count: int = 0
 
     def cleanup_caches(self) -> None:
         if len(self.elimination_cache) > MAX_ELIMINATION_CACHE_SIZE:
@@ -70,6 +71,7 @@ class Game:
         self.intersection_cache_cell_poe = defaultdict(list)
         self.should_use_cell_poe = False
         self.poe_state_snapshots.clear()
+        self.hidden_edge_clues_count = 0
 
     def save_state(self) -> None:
         snapshot = GameState(
@@ -178,15 +180,16 @@ class Game:
                 else:
                     print("POE backtracking failed, trying permutation solver...\n")
 
+        print("Starting pre-solve via permutation constraining..\n")
         if not initialize_permutations(self):
-            print("Starting pre-solve via permutation constraining..\n")
             return "Unsolvable during pre-solve"
 
         if self.is_solved():
             print("Solved by permutation constraining!")
             return self.output_grid()
 
-        print("\nStarting backtracking...\n")
+        print("Starting backtracking...\n")
         if not backtrack(self):
             return "No solution found\n"
+        print("Solved by permutation backtracking!")
         return self.output_grid()
